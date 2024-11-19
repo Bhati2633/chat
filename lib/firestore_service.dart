@@ -3,12 +3,15 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class FirestoreService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
-  // Function to create or update user profile
-  Future<void> updateUserProfile(String uid, String name, String email) async {
+  // Function to create or update user profile with last name and password
+  Future<void> updateUserProfile(String uid, String firstName, String lastName, String email, String oldPassword, String newPassword) async {
     try {
       await _db.collection('users').doc(uid).set({
-        'name': name,
+        'firstName': firstName,
+        'lastName': lastName,  // Added last name
         'email': email,
+        'oldPassword': oldPassword,  // You might want to handle passwords securely, consider hashing
+        'newPassword': newPassword,  // Same as above, consider hashing passwords
         'lastUpdated': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true)); // Merge option ensures we only update fields, not overwrite
     } catch (e) {
@@ -19,12 +22,15 @@ class FirestoreService {
   // Function to fetch user profile
   Future<Map<String, dynamic>?> getUserProfile(String uid) async {
     try {
+      // Fetching user document from Firestore
       DocumentSnapshot snapshot = await _db.collection('users').doc(uid).get();
-      return snapshot.exists ? snapshot.data() as Map<String, dynamic> : null;
+      if (snapshot.exists) {
+        return snapshot.data() as Map<String, dynamic>;
+      }
     } catch (e) {
       print("Error fetching user profile: $e");
-      return null;
     }
+    return null;
   }
 
   // Function to create a message board (room)
@@ -77,7 +83,7 @@ class FirestoreService {
     } catch (e) {
       print("Error saving user: $e");
     }
-}
+  }
 
   // Function to fetch messages for a room
   Future<List<Map<String, dynamic>>> getMessages(String roomId) async {

@@ -5,7 +5,7 @@ buildscript {
     }
     dependencies {
         // Use the correct version for google-services
-        classpath 'com.android.tools.build:gradle:7.0.4' // Update this if necessary
+        classpath "com.android.tools.build:gradle:7.1.3" // Update this if necessary
         classpath 'com.google.gms:google-services:4.4.0'
     }
 }
