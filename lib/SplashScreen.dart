@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'chat_screen.dart'; // Import ChatScreen
-import 'profile.dart'; // Import Profile screen
-import 'settings.dart'; // Import Settings screen
-import 'login.dart'; // Import Login screen
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'chat_screen.dart';  // Import ChatScreen
+import 'profile.dart';  // Import Profile screen
+import 'settings.dart';  // Import Settings screen
+import 'login.dart';  // Import Login screen
+import 'room_screen.dart';  // Import RoomScreen
 
 class SplashScreen extends StatefulWidget {
   SplashScreen({Key? key}) : super(key: key);
@@ -57,29 +59,21 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          // Background Image
-          Image.asset(
-            'assets/splash_background.jpg', // Replace with your splash screen background image
-            fit: BoxFit.cover,
-          ),
-          // Overlay with fading title
-          Center(
-            child: FadeTransition(
-              opacity: _animation,
-              child: const Text(
-                "Welcome to ChatBoard",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 30,
-                  fontWeight: FontWeight.bold,
-                ),
+      body: Container(
+        color: Colors.black, // Solid dark background
+        child: Center(
+          child: FadeTransition(
+            opacity: _animation,
+            child: const Text(
+              "Welcome to ChatBoard",
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 30,
+                fontWeight: FontWeight.bold,
               ),
             ),
           ),
-        ],
+        ),
       ),
     );
   }
@@ -88,10 +82,10 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 // Main Home Page with Message Boards
 class MessageBoardScreen extends StatelessWidget {
   final List<Map<String, dynamic>> _messageBoards = [
-    {'name': 'Games', 'iconUrl': 'assets/games.jpg'},
-    {'name': 'Business', 'iconUrl': 'assets/business.jpg'},
-    {'name': 'Public Health', 'iconUrl': 'assets/health.jpg'},
-    {'name': 'Study', 'iconUrl': 'assets/study.jpg'},
+    {'roomId': '1', 'name': 'Games', 'iconUrl': 'assets/games.jpg'},
+    {'roomId': '2', 'name': 'Business', 'iconUrl': 'assets/business.jpg'},
+    {'roomId': '3', 'name': 'Public Health', 'iconUrl': 'assets/health.jpg'},
+    {'roomId': '4', 'name': 'Study', 'iconUrl': 'assets/study.jpg'},
   ];
 
   Future<void> _signOut(BuildContext context) async {
@@ -113,18 +107,22 @@ class MessageBoardScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Select A Room'),
-        backgroundColor: Colors.blue,
+        backgroundColor: const Color.fromARGB(255, 255, 255, 255),
       ),
       drawer: Drawer(
+        backgroundColor: Colors.black87,
         child: ListView(
           padding: EdgeInsets.zero,
           children: <Widget>[
             DrawerHeader(
-              decoration: const BoxDecoration(color: Colors.blue),
-              child: const Text('Welcome User!', style: TextStyle(color: Colors.white)),
+              decoration: const BoxDecoration(color: Colors.black),
+              child: const Text(
+                'Welcome User!',
+                style: TextStyle(color: Colors.white),
+              ),
             ),
             ListTile(
-              title: const Text('Profile'),
+              title: const Text('Profile', style: TextStyle(color: Colors.white)),
               onTap: () {
                 final user = FirebaseAuth.instance.currentUser;
                 if (user != null) {
@@ -136,7 +134,7 @@ class MessageBoardScreen extends StatelessWidget {
               },
             ),
             ListTile(
-              title: const Text('Settings'),
+              title: const Text('Settings', style: TextStyle(color: Colors.white)),
               onTap: () {
                 Navigator.push(
                   context,
@@ -155,23 +153,46 @@ class MessageBoardScreen extends StatelessWidget {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => ChatScreen(roomName: board['name'])),
+                MaterialPageRoute(
+                  builder: (context) => RoomScreen(
+                    roomId: board['roomId'],
+                    roomName: board['name'],
+                  ),
+                ),
               );
             },
-            child: Card(
-              margin: const EdgeInsets.all(10.0),
+            child: Container(
+              margin: const EdgeInsets.symmetric(vertical: 40, horizontal: 16),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.grey[850], // Darker color for rectangles
+                borderRadius: BorderRadius.circular(10),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.5),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
               child: Row(
                 children: [
                   Image.asset(
                     board['iconUrl'],
-                    width: 80,
-                    height: 80,
+                    width: 180,
+                    height: 100,
                     fit: BoxFit.cover,
                   ),
-                  const SizedBox(width: 10),
-                  Text(
-                    board['name'],
-                    style: const TextStyle(fontSize: 18),
+                  const SizedBox(width: 26),
+                  Expanded(
+                    child: Text(
+                      board['name'],
+                      style: const TextStyle(
+                        color: Color.fromARGB(255, 255, 255, 255),
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -180,9 +201,11 @@ class MessageBoardScreen extends StatelessWidget {
         },
       ),
       floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.red,
         onPressed: () => _signOut(context),
         child: const Icon(Icons.logout),
       ),
+      backgroundColor: Colors.black, // Dark background for the main screen
     );
   }
 }
